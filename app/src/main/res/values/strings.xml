@@ -4,4 +4,7 @@
     <string name="label_nombre_String">Nombre: </string>
     <string name="label_categoria_String">Categoria: </string>
     <string name="label_municipio_String">Municipio: </string>
+    <string name="elemento_menu_1">Nombre</string>
+    <string name="elemento_menu_2">Categoría</string>
+    <string name="elemento_menu_3">Municipio</string>
 </resources>
