@@ -26,7 +26,7 @@ public class MainActivity extends AppCompatActivity {
     RecyclerView recyclerView;
     private ArrayList<Camping> campings;
     private CampingsAdapter adapter;
-
+    //"hola"
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
