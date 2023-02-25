@@ -1,4 +1,7 @@
 <resources>
     <string name="app_name">CampingsCV</string>
-
+    <string name="ordenar_por">Ordenar</string>
+    <string name="label_nombre_String">Nombre: </string>
+    <string name="label_categoria_String">Categoria: </string>
+    <string name="label_municipio_String">Municipio: </string>
 </resources>

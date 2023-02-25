@@ -75,7 +75,7 @@ public class MainActivity extends AppCompatActivity {
         for(int i = 0; i < length; i++){
             JSONObject jsonCamping = array.getJSONObject(i);
 
-            Camping camping = new Camping(jsonCamping.getString("Nombre"));
+            Camping camping = new Camping(jsonCamping.getString("Nombre"), jsonCamping.getString("Categoria"), jsonCamping.getString("Municipio"));
             //String name = jsonCamping.getString("nombre");
             campings.add(camping);
 

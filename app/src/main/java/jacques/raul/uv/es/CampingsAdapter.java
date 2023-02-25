@@ -53,6 +53,8 @@ public class CampingsAdapter extends RecyclerView.Adapter<CampingsAdapter.ViewHo
         // contents of the view with that element
         final Camping camping = campings.get(position);
         holder.campingName.setText(camping.getNombre());
+        holder.campingCategoria.setText(camping.getCategoria());
+        holder.campingMunicipio.setText(camping.getMunicipio());
     }
 
     /**
@@ -60,10 +62,12 @@ public class CampingsAdapter extends RecyclerView.Adapter<CampingsAdapter.ViewHo
      * (custom ViewHolder).
      */
     public class ViewHolder extends RecyclerView.ViewHolder {
-        TextView campingName;
+        TextView campingName, campingCategoria, campingMunicipio;
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
             campingName = (TextView) itemView.findViewById(R.id.campingName);
+            campingCategoria = (TextView) itemView.findViewById(R.id.campingCategoria);
+            campingMunicipio = (TextView) itemView.findViewById(R.id.campingMunicipio);
         }
     }
 
