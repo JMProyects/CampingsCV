@@ -9,46 +9,38 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
-import org.jetbrains.annotations.NotNull;
-import org.json.JSONArray;
-import org.json.JSONObject;
-
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.Reader;
-import java.io.StringWriter;
-import java.io.UnsupportedEncodingException;
-import java.io.Writer;
 import java.util.ArrayList;
 
-public class CampingsAdapter extends RecyclerView.Adapter<CampingsAdapter.ViewHolder>{
+public class CampingsAdapter extends RecyclerView.Adapter<CampingsAdapter.ViewHolder> {
+
+    private final CampingsViewInterface cvi;
+
     private ArrayList<Camping> campings;
+    private ArrayList<Camping> originalCampings;
     Context context;
 
-    public CampingsAdapter(ArrayList<Camping> campings, Context context)
-    {
+    public CampingsAdapter(CampingsViewInterface cvi, ArrayList<Camping> campings, Context context) {
+        this.cvi = cvi;
         this.context = context;
-        this.campings = campings ;
+        this.campings = campings;
+        this.originalCampings = new ArrayList<>(campings);
     }
+
     @Override
     public int getItemCount() {
         return campings.size();
     }
+
     // inflates the row layout from xml when needed
     @NonNull
     @Override
-    public CampingsAdapter.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int
-            viewType) {
-        View view =
-                LayoutInflater.from(parent.getContext()).inflate(R.layout.camping_item, parent, false);
-        return new ViewHolder(view);
+    public CampingsAdapter.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.camping_item, parent, false);
+        return new ViewHolder(view, cvi);
     }
 
     @Override
-    public void onBindViewHolder(@NonNull CampingsAdapter.ViewHolder holder, int
-            position) {
+    public void onBindViewHolder(@NonNull CampingsAdapter.ViewHolder holder, int position) {
         // Get element from your dataset at this position and replace the
         // contents of the view with that element
         final Camping camping = campings.get(position);
@@ -61,16 +53,32 @@ public class CampingsAdapter extends RecyclerView.Adapter<CampingsAdapter.ViewHo
      * Provide a reference to the type of views that you are using
      * (custom ViewHolder).
      */
-    public class ViewHolder extends RecyclerView.ViewHolder {
+    public static class ViewHolder extends RecyclerView.ViewHolder {
         TextView campingName, campingCategoria, campingMunicipio;
-        public ViewHolder(@NonNull View itemView) {
+
+        public ViewHolder(@NonNull View itemView, CampingsViewInterface cvi) {
             super(itemView);
-            campingName = (TextView) itemView.findViewById(R.id.campingName);
-            campingCategoria = (TextView) itemView.findViewById(R.id.campingCategoria);
-            campingMunicipio = (TextView) itemView.findViewById(R.id.campingMunicipio);
+
+            campingName = itemView.findViewById(R.id.campingName);
+            campingCategoria = itemView.findViewById(R.id.campingCategoria);
+            campingMunicipio = itemView.findViewById(R.id.campingMunicipio);
+
+            itemView.setOnClickListener(view -> {
+                if(cvi != null){
+                    int pos = getAdapterPosition();
+
+                    if (pos != RecyclerView.NO_POSITION){
+                        cvi.onItemClick(pos);
+                    }
+                }
+            });
         }
+
     }
-
-
-
+    public void setFilteredList(ArrayList<Camping> filteredList) {
+        //campings = new ArrayList<>(filteredList);
+        campings.clear();
+        campings.addAll(filteredList);
+        notifyDataSetChanged();
+    }
 }
