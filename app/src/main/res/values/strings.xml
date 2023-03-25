@@ -4,4 +4,27 @@
     <string name="label_nombre_String">Nombre: </string>
     <string name="label_categoria_String">Categoria: </string>
     <string name="label_municipio_String">Municipio: </string>
+    <string name="elemento_menu_1">Nombre</string>
+    <string name="elemento_menu_2">Categoría</string>
+    <string name="elemento_menu_3">Municipio</string>
+    <string name="elemento_detalle">Detalle</string>
+    <string name="mapa"></string>
+    <string name="no_results">No se encontraron resultados.</string>
+    <string name="favButton">favButton</string>
+
+    //Placeholder camping detalles
+    <string name="lbl_nombre">Nombre</string>
+    <string name="lbl_categoria">Categoría</string>
+    <string name="lbl_municipio">Municipio</string>
+    <string name="lbl_estado">Estado</string>
+    <string name="lbl_provincia">Provincia</string>
+    <string name="lbl_cp">CP</string>
+    <string name="lbl_direccion">Dirección</string>
+    <string name="lbl_email">Email</string>
+    <string name="lbl_web">Web</string>
+    <string name="lbl_numparcela">Núm. Parcela</string>
+    <string name="lbl_plazasparcela">Plazas Parcela</string>
+    <string name="lbl_plazaslibreacampada">Plazas Libre Acampada</string>
+    <string name="lbl_periodo">Dias Período</string>
+    <string name="txt_detallescamping">Detalles Camping</string>
 </resources>

@@ -5,16 +5,18 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content">
 
-    <androidx.cardview.widget.CardView
-        android:layout_width="372dp"
+    <jacques.raul.uv.es.GradientItemList
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        android:backgroundTint="#5664B6"
-        app:cardCornerRadius="5dp"
-        android:layout_margin="5dp">
+
+        app:cardCornerRadius="20dp"
+        app:cardElevation="4dp"
+        android:layout_marginHorizontal="10dp"
+        android:layout_marginVertical="5dp">
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
@@ -29,7 +31,8 @@
                     android:layout_height="match_parent"
                     android:text="@string/label_nombre_String"
                     android:gravity="start"
-                    android:textColor="@color/white"
+                    android:textStyle="bold"
+                    android:textColor="@color/black"
                     android:layout_marginRight="4dp"
                     />
                 <TextView
@@ -38,7 +41,7 @@
                     android:layout_height="match_parent"
                     android:text="@string/app_name"
                     android:gravity="start"
-                    android:textColor="@color/white"
+                    android:textColor="@color/black"
                     />
             </LinearLayout>
 
@@ -51,7 +54,8 @@
                     android:layout_height="match_parent"
                     android:text="@string/label_categoria_String"
                     android:gravity="start"
-                    android:textColor="@color/white"
+                    android:textStyle="bold"
+                    android:textColor="@color/black"
                     android:layout_marginRight="4dp"
                     />
                 <TextView
@@ -60,7 +64,7 @@
                     android:layout_height="match_parent"
                     android:text="@string/app_name"
                     android:gravity="start"
-                    android:textColor="@color/white"
+                    android:textColor="@color/black"
                     />
             </LinearLayout>
 
@@ -72,7 +76,8 @@
                     android:layout_height="match_parent"
                     android:text="@string/label_municipio_String"
                     android:gravity="start"
-                    android:textColor="@color/white"
+                    android:textStyle="bold"
+                    android:textColor="@color/black"
                     android:layout_marginRight="4dp"
                     />
                 <TextView
@@ -81,10 +86,10 @@
                     android:layout_height="match_parent"
                     android:text="@string/app_name"
                     android:gravity="start"
-                    android:textColor="@color/white"
+                    android:textColor="@color/black"
                     />
             </LinearLayout>
         </LinearLayout>
 
-    </androidx.cardview.widget.CardView>
+    </jacques.raul.uv.es.GradientItemList>
 </androidx.constraintlayout.widget.ConstraintLayout>
