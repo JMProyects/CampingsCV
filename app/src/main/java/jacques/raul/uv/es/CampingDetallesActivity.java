@@ -39,6 +39,8 @@ public class CampingDetallesActivity extends AppCompatActivity {
     Menu menu;
     MenuItem botonFav;
 
+    boolean isFav;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -108,6 +110,21 @@ public class CampingDetallesActivity extends AppCompatActivity {
         this.menu = menu;
 
         botonFav = menu.findItem(R.id.new_fav_camping);
+
+        Long id = getIntent().getLongExtra("id", 0);
+
+        Cursor mCursor = db.isFav(id);
+        if(!(mCursor.moveToFirst()) || mCursor.getCount() == 0){
+            this.isFav = false;
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                botonFav.setIconTintList(ColorStateList.valueOf(Color.rgb(0, 0, 0)));
+            }
+        }else {
+            this.isFav = true;
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                botonFav.setIconTintList(ColorStateList.valueOf(Color.rgb(255, 0, 0)));
+            }
+        }
         return true;
     }
 
@@ -123,8 +140,7 @@ public class CampingDetallesActivity extends AppCompatActivity {
                 return true;
             case R.id.new_fav_camping:
                 long id = getIntent().getLongExtra("id", 0);
-                Cursor mCursor = db.isFav(id);
-                if(!(mCursor.moveToFirst()) || mCursor.getCount() == 0){
+                if(!isFav){
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                         botonFav.setIconTintList(ColorStateList.valueOf(Color.rgb(255,0,0)));
                     }
@@ -151,8 +167,6 @@ public class CampingDetallesActivity extends AppCompatActivity {
                     db.deleteCamping(id);
 
                 }
-
-
 
             // Do something when the user clicks on the help item
             default:
