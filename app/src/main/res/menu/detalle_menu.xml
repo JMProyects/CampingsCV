@@ -5,7 +5,7 @@
         android:id="@+id/new_fav_camping"
         android:icon="@drawable/favorito"
         android:title="@string/mapa"
-        android:iconTint="#777"
+        android:iconTint="#000"
         app:showAsAction="always" />
     <item
         android:id="@+id/new_map"

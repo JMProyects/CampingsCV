@@ -23,7 +23,7 @@ public class CampingsAdapter extends RecyclerView.Adapter<CampingsAdapter.ViewHo
         this.cvi = cvi;
         this.context = context;
         this.campings = campings;
-        this.originalCampings = new ArrayList<>(campings);
+        this.originalCampings = new ArrayList<Camping>(campings);
     }
 
     @Override

@@ -6,6 +6,7 @@ import android.database.Cursor;
 import android.os.Bundle;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import java.util.ArrayList;
@@ -21,18 +22,42 @@ public class CampingsFavoritos extends AppCompatActivity implements CampingsView
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.campings_favoritos);
+        db = new FavDB(getBaseContext());
+        campings = new ArrayList<Camping>();
 
         recyclerView = findViewById(R.id.recyclerview_campingsfav);
+        recyclerView.setHasFixedSize(true);
+        recyclerView.setLayoutManager(new LinearLayoutManager(this));
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        campings.clear();
         getData();
     }
 
     public void getData(){
         Cursor cursor = db.read_all_data();
-
         while (cursor.moveToNext()) {
-            @SuppressLint("Range") String id = cursor.getString(cursor.getColumnIndex(db.KEY_ID));
+            long id = cursor.getLong(cursor.getColumnIndexOrThrow(db.KEY_ID));
+            String nombre = cursor.getString(cursor.getColumnIndexOrThrow(db.CAMPING_NAME));
+            String categoria = cursor.getString(cursor.getColumnIndexOrThrow(db.CAMPING_CATEGORY));
+            String municipio = cursor.getString(cursor.getColumnIndexOrThrow(db.CAMPING_MUNICIPIO));
+            String estado = cursor.getString(cursor.getColumnIndexOrThrow(db.CAMPING_ESTADO));
+            String provincia = cursor.getString(cursor.getColumnIndexOrThrow(db.CAMPING_PROVINCIA));
+            String cp = cursor.getString(cursor.getColumnIndexOrThrow(db.CAMPING_CP));
+            String direccion = cursor.getString(cursor.getColumnIndexOrThrow(db.CAMPING_DIRECCION));
+            String email = cursor.getString(cursor.getColumnIndexOrThrow(db.CAMPING_EMAIL));
+            String web = cursor.getString(cursor.getColumnIndexOrThrow(db.CAMPING_WEB));
+            String numParcelas = cursor.getString(cursor.getColumnIndexOrThrow(db.CAMPING_NUMPARCELAS));
+            String plazasParcela = cursor.getString(cursor.getColumnIndexOrThrow(db.CAMPING_PLAZASPARCELA));
+            String plazasLibreAcampada = cursor.getString(cursor.getColumnIndexOrThrow(db.CAMPING_PLAZASLIBREACAMPADA));
+            String periodo = cursor.getString(cursor.getColumnIndexOrThrow(db.CAMPING_PERIODO));
 
+            campings.add(new Camping(id, nombre, categoria, municipio, estado, provincia, cp, direccion, email, web, numParcelas, plazasParcela, plazasLibreAcampada, periodo));
         }
+        cursor.close();
 
         setupData(campings);
     }

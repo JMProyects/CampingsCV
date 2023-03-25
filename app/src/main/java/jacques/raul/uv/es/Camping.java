@@ -4,7 +4,7 @@ import java.util.List;
 
 public class Camping {
 
-    private int id;
+    private long id;
     private String nombre, categoria, municipio, estado, provincia, cp, direccion, email, web, numParcelas, plazasParcela, plazasLibreAcampada, periodo;
 
     public Camping(String nombre, String categoria, String municipio, String estado, String provincia, String cp, String direccion, String email, String web, String numParcelas, String plazasParcela, String plazasLibreAcampada, String periodo) {
@@ -37,7 +37,7 @@ public class Camping {
         this.numParcelas = numParcelas;
     }
 
-    public Camping(int id, String nombre, String categoria, String municipio, String estado, String provincia, String cp, String direccion, String email, String web, String numParcelas, String plazasParcela, String plazasLibreAcampada, String periodo) {
+    public Camping(long id, String nombre, String categoria, String municipio, String estado, String provincia, String cp, String direccion, String email, String web, String numParcelas, String plazasParcela, String plazasLibreAcampada, String periodo) {
         this.id = id;
         this.nombre = nombre;
         this.categoria = categoria;
@@ -158,11 +158,11 @@ public class Camping {
         this.periodo = periodo;
     }
 
-    public int getId() {
+    public long getId() {
         return id;
     }
 
-    public void setId(int id) {
+    public void setId(long id) {
         this.id = id;
     }
 

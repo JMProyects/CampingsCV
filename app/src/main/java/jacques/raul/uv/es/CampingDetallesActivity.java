@@ -1,7 +1,11 @@
 package jacques.raul.uv.es;
 
 import android.content.Intent;
+import android.content.res.ColorStateList;
+import android.database.Cursor;
+import android.graphics.Color;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -32,6 +36,9 @@ public class CampingDetallesActivity extends AppCompatActivity {
 
     FavDB db;
 
+    Menu menu;
+    MenuItem botonFav;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -43,7 +50,6 @@ public class CampingDetallesActivity extends AppCompatActivity {
 
         MenuInflater inflater = getMenuInflater();
         inflater.inflate(R.menu.menu, toolbar.getMenu());
-
 
         String name = getIntent().getStringExtra("nombre");
         String categoria = getIntent().getStringExtra("categoria");
@@ -99,6 +105,9 @@ public class CampingDetallesActivity extends AppCompatActivity {
     public boolean onCreateOptionsMenu(Menu menu) {
         MenuInflater inflater = getMenuInflater();
         inflater.inflate(R.menu.detalle_menu, menu);
+        this.menu = menu;
+
+        botonFav = menu.findItem(R.id.new_fav_camping);
         return true;
     }
 
@@ -113,12 +122,37 @@ public class CampingDetallesActivity extends AppCompatActivity {
                 showMap(uri);
                 return true;
             case R.id.new_fav_camping:
-                String name = getIntent().getStringExtra("nombre");
-                String categoria = getIntent().getStringExtra("categoria");
-                String municipio = getIntent().getStringExtra("municipio");
+                long id = getIntent().getLongExtra("id", 0);
+                Cursor mCursor = db.isFav(id);
+                if(!(mCursor.moveToFirst()) || mCursor.getCount() == 0){
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                        botonFav.setIconTintList(ColorStateList.valueOf(Color.rgb(255,0,0)));
+                    }
+                    String name = getIntent().getStringExtra("nombre");
+                    String categoria = getIntent().getStringExtra("categoria");
+                    String municipio = getIntent().getStringExtra("municipio");
+                    String estado = getIntent().getStringExtra("estado");
+                    String provincia = getIntent().getStringExtra("provincia");
+                    String cp = getIntent().getStringExtra("cp");
+                    String direccion = getIntent().getStringExtra("direccion");
+                    String email = getIntent().getStringExtra("email");
+                    String web = getIntent().getStringExtra("web");
+                    String numParcela = getIntent().getStringExtra("núm. Parcela");
+                    String plazasParcela = getIntent().getStringExtra("Plazas Parcela");
+                    String plazasLibreAcampada = getIntent().getStringExtra("Plazas Libre Acampada");
+                    String periodo = getIntent().getStringExtra("Días Periodo");
 
-                //db.insertCamping(name, categoria, municipio);
-                return true;
+                    db.insertCamping(id, name, categoria, municipio, estado, provincia, cp, direccion, email, web, numParcela, plazasParcela, plazasLibreAcampada, periodo);
+                    return true;
+                }else{
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                        botonFav.setIconTintList(ColorStateList.valueOf(Color.rgb(0,0,0)));
+                    }
+                    db.deleteCamping(id);
+
+                }
+
+
 
             // Do something when the user clicks on the help item
             default:
