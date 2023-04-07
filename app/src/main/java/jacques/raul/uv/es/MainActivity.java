@@ -11,6 +11,8 @@ import android.app.AlertDialog;
 import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.drawable.Drawable;
+import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.text.InputType;
 import android.view.Menu;
@@ -33,7 +35,10 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.StringWriter;
+import java.io.UnsupportedEncodingException;
 import java.io.Writer;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -50,6 +55,13 @@ public class MainActivity extends AppCompatActivity implements CampingsViewInter
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        try {
+            Thread.sleep(2000);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+        setTheme(R.style.Theme_CampingsCV);
+
         setContentView(R.layout.activity_main);
 
         // Personaliza la Toolbar
@@ -67,16 +79,16 @@ public class MainActivity extends AppCompatActivity implements CampingsViewInter
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
         campings = new ArrayList<>();
         originalCampings = new ArrayList<>();
-        try {
-            getData();
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
+
 
         fabCampings.setOnClickListener(v -> {
             //here
             startActivity(new Intent(MainActivity.this, CampingsFavoritos.class));
         });
+
+        HTTPConnector httpConnector = new HTTPConnector();
+        httpConnector.execute();
+
     }
 
     // Define el comparador en el nivel de clase
@@ -215,56 +227,79 @@ public class MainActivity extends AppCompatActivity implements CampingsViewInter
 
 
     private void setupData(ArrayList<Camping> campings) {
+        this.campings = campings;
+
         adapter = new CampingsAdapter(this, campings, getApplicationContext());
         recyclerView.setAdapter(adapter);
     }
 
-    public void getData() throws JSONException {
-        InputStream is = getApplicationContext().getResources().openRawResource(R.raw.datastore_search);
-        Writer writer = new StringWriter();
-        char[] buffer = new char[1024];
-        try {
-            Reader reader = new BufferedReader(new InputStreamReader(is, StandardCharsets.UTF_8));
-            int n;
-            while ((n = reader.read(buffer)) != -1) {
-                writer.write(buffer, 0, n);
-            }
-
-        } catch (IOException e) {
-            e.printStackTrace();
-        } finally {
+    class HTTPConnector extends AsyncTask<String, Void, ArrayList> {
+        @Override
+        protected ArrayList doInBackground(String... params) {
+            ArrayList campings=new ArrayList<Camping>();
+            //Perform the request and get the answer
+            String url = "https://dadesobertes.gva.es/api/3/action/datastore_search?id=2ddaf823-5da4-4459-aa57-5bfe9f9eb474";
+            Writer writer = new StringWriter();
+            char[] buffer = new char[1024];
             try {
-                is.close();
+                URL obj = new URL(url);
+                HttpURLConnection con = (HttpURLConnection) obj.openConnection();
+                con.setRequestMethod("GET");
+                //add request header
+                con.setRequestProperty("user-Agent", "Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/55.0.2883.87 Safari/537.36");
+                con.setRequestProperty("accept", "application/json;");
+                con.setRequestProperty("accept-language", "es");
+                con.connect();
+                int responseCode = con.getResponseCode();
+                if (responseCode != HttpURLConnection.HTTP_OK) {
+                    throw new IOException("HTTP error code: " + responseCode);
+                }
+                BufferedReader in = new BufferedReader(new InputStreamReader(con.getInputStream(), "UTF8"));
+                int n;
+                while ((n = in.read(buffer)) != -1) {
+                    writer.write(buffer, 0, n);
+                }
+                in.close();
+            } catch (UnsupportedEncodingException e) {
+                e.printStackTrace();
             } catch (IOException e) {
                 e.printStackTrace();
             }
+            try {
+                //The String writer.toString() must be parsed in the campings ArrayList by using JSONArray and JSONObject
+                JSONObject object = new JSONObject(writer.toString());
+                JSONArray array = object.getJSONObject("result").getJSONArray("records");
+
+                int length = array.length();
+                for (int i = 0; i < length; i++) {
+                    JSONObject jsonCamping = array.getJSONObject(i);
+
+                    Camping camping = new Camping(i, jsonCamping.getString("Nombre"), jsonCamping.getString("Categoria"), jsonCamping.getString("Municipio"),
+                            jsonCamping.getString("Estado"), jsonCamping.getString("Provincia"), jsonCamping.getString("CP"), jsonCamping.getString("Direccion"),
+                            jsonCamping.getString("Email"), jsonCamping.getString("Web"), jsonCamping.getString("Núm. Parcelas"), jsonCamping.getString("Plazas Parcela"),
+                            jsonCamping.getString("Plazas Libre Acampada"), jsonCamping.getString("Días Periodo"));
+
+
+                    //String name = jsonCamping.getString("nombre");
+                    campings.add(camping);
+                    originalCampings.add(camping);
+
+                    System.out.println(jsonCamping.getString("Nombre"));
+                }
+            }catch (JSONException e){
+                e.printStackTrace();
+            }
+
+            return campings;
         }
-        //The String writer.toString() must be parsed in the campings ArrayList by using JSONArray and JSONObject
-        JSONObject object = new JSONObject(writer.toString());
-        JSONArray array = object.getJSONObject("result").getJSONArray("records");
-
-        int length = array.length();
-        for (int i = 0; i < length; i++) {
-            JSONObject jsonCamping = array.getJSONObject(i);
-
-            Camping camping = new Camping(i, jsonCamping.getString("Nombre"), jsonCamping.getString("Categoria"), jsonCamping.getString("Municipio"),
-                    jsonCamping.getString("Estado"), jsonCamping.getString("Provincia"), jsonCamping.getString("CP"), jsonCamping.getString("Direccion"),
-                    jsonCamping.getString("Email"), jsonCamping.getString("Web"), jsonCamping.getString("Núm. Parcelas"), jsonCamping.getString("Plazas Parcela"),
-                    jsonCamping.getString("Plazas Libre Acampada"), jsonCamping.getString("Días Periodo"));
-
-
-            //String name = jsonCamping.getString("nombre");
-            campings.add(camping);
-            originalCampings.add(camping);
-
-            System.out.println(jsonCamping.getString("Nombre"));
+        @Override
+        protected void onPostExecute(ArrayList campings) {
+            // Create the RecyclerView
+            setupData(campings);
+            Collections.sort(campings, comparator);
         }
-        //TODO: read the data of each camping, create a new Camping object and insert it in the campings arraylist.
-        setupData(campings);
-
-        Collections.sort(campings, comparator);
-
     }
+
 
     @Override
     public void onItemClick(int position) {
@@ -287,6 +322,7 @@ public class MainActivity extends AppCompatActivity implements CampingsViewInter
 
         startActivity(intent);
     }
+
 
 
 }

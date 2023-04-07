@@ -10,6 +10,7 @@ import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -49,9 +50,6 @@ public class CampingDetallesActivity extends AppCompatActivity {
 
         Toolbar toolbar = findViewById(R.id.new_map_toolbar);
         setSupportActionBar(toolbar);
-
-        MenuInflater inflater = getMenuInflater();
-        inflater.inflate(R.menu.menu, toolbar.getMenu());
 
         String name = getIntent().getStringExtra("nombre");
         String categoria = getIntent().getStringExtra("categoria");
@@ -101,6 +99,12 @@ public class CampingDetallesActivity extends AppCompatActivity {
 
         db = new FavDB(getBaseContext());
 
+        txt_web.setOnClickListener(view -> {
+            Intent browserIntent = new Intent(Intent.ACTION_VIEW);
+            browserIntent.setData(Uri.parse(txt_web.getText().toString().replace(" ", "+")));
+            startActivity(browserIntent);
+        });
+
     }
 
     @Override
@@ -111,15 +115,15 @@ public class CampingDetallesActivity extends AppCompatActivity {
 
         botonFav = menu.findItem(R.id.new_fav_camping);
 
-        Long id = getIntent().getLongExtra("id", 0);
+        long id = getIntent().getLongExtra("id", 0);
 
         Cursor mCursor = db.isFav(id);
-        if(!(mCursor.moveToFirst()) || mCursor.getCount() == 0){
+        if (!(mCursor.moveToFirst()) || mCursor.getCount() == 0) {
             this.isFav = false;
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                 botonFav.setIconTintList(ColorStateList.valueOf(Color.rgb(0, 0, 0)));
             }
-        }else {
+        } else {
             this.isFav = true;
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                 botonFav.setIconTintList(ColorStateList.valueOf(Color.rgb(255, 0, 0)));
@@ -140,9 +144,9 @@ public class CampingDetallesActivity extends AppCompatActivity {
                 return true;
             case R.id.new_fav_camping:
                 long id = getIntent().getLongExtra("id", 0);
-                if(!isFav){
+                if (!isFav) {
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                        botonFav.setIconTintList(ColorStateList.valueOf(Color.rgb(255,0,0)));
+                        botonFav.setIconTintList(ColorStateList.valueOf(Color.rgb(255, 0, 0)));
                     }
                     String name = getIntent().getStringExtra("nombre");
                     String categoria = getIntent().getStringExtra("categoria");
@@ -160,15 +164,15 @@ public class CampingDetallesActivity extends AppCompatActivity {
 
                     db.insertCamping(id, name, categoria, municipio, estado, provincia, cp, direccion, email, web, numParcela, plazasParcela, plazasLibreAcampada, periodo);
                     return true;
-                }else{
+                } else {
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                        botonFav.setIconTintList(ColorStateList.valueOf(Color.rgb(0,0,0)));
+                        botonFav.setIconTintList(ColorStateList.valueOf(Color.rgb(0, 0, 0)));
                     }
                     db.deleteCamping(id);
 
                 }
 
-            // Do something when the user clicks on the help item
+                // Do something when the user clicks on the help item
             default:
                 return super.onOptionsItemSelected(item);
         }
@@ -181,4 +185,5 @@ public class CampingDetallesActivity extends AppCompatActivity {
             startActivity(intent);
         }
     }
+
 }

@@ -8,8 +8,9 @@
     <string name="elemento_menu_2">Categoría</string>
     <string name="elemento_menu_3">Municipio</string>
     <string name="elemento_detalle">Detalle</string>
-    <string name="mapa"></string>
+
     <string name="no_results">No se encontraron resultados.</string>
+    <string name="no_fav">No hay campings favoritos.</string>
     <string name="favButton">favButton</string>
 
     //Placeholder camping detalles
