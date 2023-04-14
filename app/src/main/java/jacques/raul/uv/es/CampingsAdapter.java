@@ -73,7 +73,6 @@ public class CampingsAdapter extends RecyclerView.Adapter<CampingsAdapter.ViewHo
                 }
             });
         }
-
     }
     public void setFilteredList(ArrayList<Camping> filteredList) {
         //campings = new ArrayList<>(filteredList);

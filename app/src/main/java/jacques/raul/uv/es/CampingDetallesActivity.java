@@ -1,22 +1,33 @@
 package jacques.raul.uv.es;
 
+import android.Manifest;
+import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.content.res.ColorStateList;
 import android.database.Cursor;
 import android.graphics.Color;
+import android.location.Address;
+import android.location.Geocoder;
+import android.location.Location;
+import android.location.LocationManager;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
-import android.view.View;
+
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 
-import org.w3c.dom.Text;
+import java.io.IOException;
+import java.util.List;
 
 public class CampingDetallesActivity extends AppCompatActivity {
 
@@ -34,7 +45,7 @@ public class CampingDetallesActivity extends AppCompatActivity {
     TextView txt_plazasParcela;
     TextView txt_plazasLibreAcampada;
     TextView txt_periodo;
-
+    TextView txt_distancia;
     FavDB db;
 
     Menu menu;
@@ -46,7 +57,6 @@ public class CampingDetallesActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.campings_detalles_activity);
-
 
         Toolbar toolbar = findViewById(R.id.new_map_toolbar);
         setSupportActionBar(toolbar);
@@ -80,7 +90,7 @@ public class CampingDetallesActivity extends AppCompatActivity {
         txt_plazasParcela = findViewById(R.id.detalle_plazaparcela);
         txt_plazasLibreAcampada = findViewById(R.id.detalle_plazalibreacampada);
         txt_periodo = findViewById(R.id.detalle_periodo);
-
+        txt_distancia = findViewById(R.id.detalle_distancia);
 
         txt_nombre.setText(name);
         txt_cat.setText(categoria);
@@ -105,6 +115,43 @@ public class CampingDetallesActivity extends AppCompatActivity {
             startActivity(browserIntent);
         });
 
+        // Solicitar permiso de ubicación si no se ha concedido
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+            try {
+                calcularDistancia();
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        } else {
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 1);
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (requestCode == 1 && grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+            try {
+                calcularDistancia();
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        }
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        // Actualizar la distancia cada vez que se reanude la actividad
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+            try {
+                calcularDistancia();
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        } else {
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 1);
+        }
     }
 
     @Override
@@ -178,12 +225,55 @@ public class CampingDetallesActivity extends AppCompatActivity {
         }
     }
 
+    public void calcularDistancia() throws IOException {
+        LocationManager locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+            // Obtener la ubicación actual del dispositivo
+            Location location = locationManager.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
+            if (location != null) {
+                // Obtener la localización del camping a partir del nombre
+                String campingName = txt_muni.getText().toString();
+                Geocoder geocoder = new Geocoder(this);
+                List<Address> addresses = geocoder.getFromLocationName(campingName, 1);
+                if (addresses.size() > 0) {
+                    Address campingAddress = addresses.get(0);
+                    double campingLatitude = campingAddress.getLatitude();
+                    double campingLongitude = campingAddress.getLongitude();
+
+                    // Crear una instancia de Location para la ubicación del camping
+                    Location campingLocation = new Location("");
+                    campingLocation.setLatitude(campingLatitude);
+                    campingLocation.setLongitude(campingLongitude);
+
+                    // Calcular la distancia entre las dos ubicaciones
+                    float distance = location.distanceTo(campingLocation);
+
+                    // Actualizar el contenido del TextView con la distancia en kilómetros
+                    float distanceInKm = distance / 1000;
+                    txt_distancia.setText("Distancia: " + distanceInKm + " km");
+                } else {
+                    // No se encontró la localización del camping
+                    Toast.makeText(this, "No se encontró la localización del camping", Toast.LENGTH_SHORT).show();
+                }
+            } else {
+                // No se pudo obtener la ubicación actual, mostrar un mensaje de error
+                Toast.makeText(this, "No se pudo obtener la ubicación actual", Toast.LENGTH_SHORT).show();
+            }
+        } else {
+            // El usuario no ha concedido permiso para acceder a la ubicación, solicitar el permiso
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 1);
+        }
+    }
+
+
     public void showMap(Uri geoLocation) {
+
         Intent intent = new Intent(Intent.ACTION_VIEW, geoLocation);
         intent.setData(geoLocation);
         if (intent.resolveActivity(getPackageManager()) != null) {
             startActivity(intent);
         }
     }
+
 
 }

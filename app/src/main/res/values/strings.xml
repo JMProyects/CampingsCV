@@ -8,7 +8,7 @@
     <string name="elemento_menu_2">Categoría</string>
     <string name="elemento_menu_3">Municipio</string>
     <string name="elemento_detalle">Detalle</string>
-
+    <string name="mapa"></string>
     <string name="no_results">No se encontraron resultados.</string>
     <string name="no_fav">No hay campings favoritos.</string>
     <string name="favButton">favButton</string>
@@ -27,5 +27,6 @@
     <string name="lbl_plazasparcela">Plazas Parcela</string>
     <string name="lbl_plazaslibreacampada">Plazas Libre Acampada</string>
     <string name="lbl_periodo">Dias Período</string>
+    <string name="lbl_distanciaGPS">Distancia</string>
     <string name="txt_detallescamping">Detalles Camping</string>
 </resources>

@@ -156,7 +156,6 @@ public class CampingsFavoritos extends AppCompatActivity implements CampingsView
                     noResults.setVisibility(View.GONE);
                 }
 
-
                 adapter.setFilteredList(filteredCampings);
 
                 return true;
