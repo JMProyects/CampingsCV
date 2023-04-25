@@ -21,6 +21,7 @@ import android.view.MenuItem;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.app.ActivityCompat;
@@ -128,7 +129,7 @@ public class CampingDetallesActivity extends AppCompatActivity {
     }
 
     @Override
-    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         if (requestCode == 1 && grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
             try {
@@ -210,11 +211,14 @@ public class CampingDetallesActivity extends AppCompatActivity {
                     String periodo = getIntent().getStringExtra("Días Periodo");
 
                     db.insertCamping(id, name, categoria, municipio, estado, provincia, cp, direccion, email, web, numParcela, plazasParcela, plazasLibreAcampada, periodo);
+                    Toast.makeText(this, "Camping añadido a favoritos", Toast.LENGTH_SHORT).show();
                     return true;
                 } else {
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                         botonFav.setIconTintList(ColorStateList.valueOf(Color.rgb(0, 0, 0)));
+                        Toast.makeText(this, "Camping eliminado de favoritos", Toast.LENGTH_SHORT).show();
                     }
+
                     db.deleteCamping(id);
 
                 }

@@ -1,17 +1,9 @@
 package jacques.raul.uv.es;
 
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.widget.Toolbar;
-import androidx.core.graphics.drawable.DrawableCompat;
-import androidx.core.view.MenuItemCompat;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
-
 import android.app.AlertDialog;
 import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.drawable.Drawable;
-import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.text.InputType;
@@ -22,6 +14,14 @@ import android.view.View;
 import android.widget.EditText;
 import android.widget.SearchView;
 import android.widget.TextView;
+import android.widget.Toast;
+
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
+import androidx.core.graphics.drawable.DrawableCompat;
+import androidx.core.view.MenuItemCompat;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
@@ -31,12 +31,7 @@ import org.json.JSONObject;
 
 import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.Reader;
-import java.io.StringWriter;
-import java.io.UnsupportedEncodingException;
-import java.io.Writer;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
@@ -80,15 +75,10 @@ public class MainActivity extends AppCompatActivity implements CampingsViewInter
         campings = new ArrayList<>();
         originalCampings = new ArrayList<>();
 
-
-        fabCampings.setOnClickListener(v -> {
-            //here
-            startActivity(new Intent(MainActivity.this, CampingsFavoritos.class));
-        });
+        fabCampings.setOnClickListener(v -> startActivity(new Intent(MainActivity.this, CampingsFavoritos.class)));
 
         HTTPConnector httpConnector = new HTTPConnector();
         httpConnector.execute();
-
     }
 
     // Define el comparador en el nivel de clase
@@ -127,6 +117,12 @@ public class MainActivity extends AppCompatActivity implements CampingsViewInter
                 Collections.sort(campings, comparadorMunicipio);
                 adapter.notifyDataSetChanged();
                 return true;
+
+            case R.id.refresh_data:
+                refreshCampingsData();
+                Toast.makeText(this, "¡Campings actualizados con éxito!", Toast.LENGTH_SHORT).show();
+                return true;
+
             case R.id.buscador:
                 // Mostrar un cuadro de diálogo para que el usuario ingrese el texto de búsqueda
                 AlertDialog.Builder builder = new AlertDialog.Builder(this);
@@ -141,13 +137,10 @@ public class MainActivity extends AppCompatActivity implements CampingsViewInter
                     String searchText = input.getText().toString().trim().toLowerCase();
                     ArrayList<Camping> filteredCampings = new ArrayList<>();
                     for (Camping camping : originalCampings) {
-                        if (camping.getNombre().toLowerCase().contains(searchText)
-                                || camping.getCategoria().toLowerCase().contains(searchText)
-                                || camping.getMunicipio().toLowerCase().contains(searchText)) {
+                        if (camping.getNombre().toLowerCase().contains(searchText) || camping.getCategoria().toLowerCase().contains(searchText) || camping.getMunicipio().toLowerCase().contains(searchText)) {
                             filteredCampings.add(camping);
                         }
                     }
-
                     // Actualizar la lista de campings con los resultados de la búsqueda
                     if (filteredCampings.size() > 0) {
                         runOnUiThread(() -> adapter.setFilteredList(filteredCampings));
@@ -155,7 +148,6 @@ public class MainActivity extends AppCompatActivity implements CampingsViewInter
                         runOnUiThread(() -> adapter.setFilteredList(filteredCampings));
                     }
                 });
-
                 // Mostrar el cuadro de diálogo de búsqueda
                 builder.show();
                 return true;
@@ -177,19 +169,14 @@ public class MainActivity extends AppCompatActivity implements CampingsViewInter
                 mapItem.setIcon(mapIcon);
             }
         }
-
         return super.onPrepareOptionsMenu(menu);
     }
-
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.menu, menu);
-
         MenuItem searchItem = menu.findItem(R.id.buscador);
-
         SearchView searchView = (SearchView) MenuItemCompat.getActionView(searchItem);
-
         searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
             public boolean onQueryTextSubmit(String query) {
@@ -202,104 +189,112 @@ public class MainActivity extends AppCompatActivity implements CampingsViewInter
                 String searchText = newText.trim().toLowerCase();
 
                 for (Camping camping : originalCampings) {
-                    if (camping.getNombre().toLowerCase().contains(searchText)
-                            || camping.getCategoria().toLowerCase().contains(searchText)
-                            || camping.getMunicipio().toLowerCase().contains(searchText)) {
+                    if (camping.getNombre().toLowerCase().contains(searchText) || camping.getCategoria().toLowerCase().contains(searchText) || camping.getMunicipio().toLowerCase().contains(searchText)) {
                         filteredCampings.add(camping);
                     }
                 }
-
                 if (filteredCampings.isEmpty()) {
                     noResults.setVisibility(View.VISIBLE);
                 } else {
                     noResults.setVisibility(View.GONE);
                 }
-
-
                 adapter.setFilteredList(filteredCampings);
-
                 return true;
             }
         });
-
         return true;
     }
 
-
     private void setupData(ArrayList<Camping> campings) {
         this.campings = campings;
-
         adapter = new CampingsAdapter(this, campings, getApplicationContext());
         recyclerView.setAdapter(adapter);
+    }
+
+    private String getHttpContent(String url) throws IOException {
+        HttpURLConnection con = (HttpURLConnection) new URL(url).openConnection();
+        con.setRequestMethod("GET");
+        con.setRequestProperty("user-Agent", "Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/55.0.2883.87 Safari/537.36");
+        con.setRequestProperty("accept", "application/json;");
+        con.setRequestProperty("accept-language", "es");
+        con.connect();
+        int responseCode = con.getResponseCode();
+        if (responseCode != HttpURLConnection.HTTP_OK) {
+            throw new IOException("HTTP error code: " + responseCode);
+        }
+        BufferedReader in = new BufferedReader(new InputStreamReader(con.getInputStream(), StandardCharsets.UTF_8));
+        StringBuilder content = new StringBuilder();
+        String line;
+        while ((line = in.readLine()) != null) {
+            content.append(line);
+        }
+        in.close();
+        return content.toString();
+    }
+
+    private ArrayList<Camping> getCampingsFromUrl(String url) {
+        ArrayList<Camping> campings = new ArrayList<>();
+        try {
+            String jsonResponse = getHttpContent(url);
+            JSONObject object = new JSONObject(jsonResponse);
+            JSONArray array = object.getJSONObject("result").getJSONArray("records");
+
+            int length = array.length();
+            for (int i = 0; i < length; i++) {
+                JSONObject jsonCamping = array.getJSONObject(i);
+                Camping camping = new Camping(i, jsonCamping.getString("Nombre"), jsonCamping.getString("Categoria"), jsonCamping.getString("Municipio"), jsonCamping.getString("Estado"), jsonCamping.getString("Provincia"), jsonCamping.getString("CP"), jsonCamping.getString("Direccion"), jsonCamping.getString("Email"), jsonCamping.getString("Web"), jsonCamping.getString("Núm. Parcelas"), jsonCamping.getString("Plazas Parcela"), jsonCamping.getString("Plazas Libre Acampada"), jsonCamping.getString("Días Periodo"));
+                campings.add(camping);
+            }
+        } catch (IOException | JSONException e) {
+            e.printStackTrace();
+        }
+        return campings;
+    }
+
+    private void refreshCampingsData() {
+        new Thread(() -> {
+            String packageSearchUrl = "https://dadesobertes.gva.es/api/3/action/package_search?q=dades-turisme-campings-comunitat-valenciana";
+            try {
+                JSONObject packageSearchJson = new JSONObject(getHttpContent(packageSearchUrl));
+                JSONArray resources = packageSearchJson.getJSONObject("result").getJSONArray("results").getJSONObject(0).getJSONArray("resources");
+                String latestResourceId = null;
+                for (int i = 0; i < resources.length(); i++) {
+                    JSONObject resource = resources.getJSONObject(i);
+                    if (latestResourceId == null || resource.getString("created").compareTo(latestResourceId) > 0) {
+                        latestResourceId = resource.getString("id");
+                    }
+                }
+                if (latestResourceId != null) {
+                    String newDataUrl = "https://dadesobertes.gva.es/api/3/action/datastore_search?id=" + latestResourceId;
+                    ArrayList<Camping> newCampings = getCampingsFromUrl(newDataUrl);
+                    runOnUiThread(() -> {
+                        originalCampings = newCampings;
+                        ArrayList<Camping> filteredCampings = new ArrayList<>(originalCampings);
+                        adapter.setFilteredList(filteredCampings);
+                    });
+                }
+            } catch (IOException | JSONException e) {
+                e.printStackTrace();
+            }
+        }).start();
     }
 
     class HTTPConnector extends AsyncTask<String, Void, ArrayList> {
         @Override
         protected ArrayList doInBackground(String... params) {
-            ArrayList campings=new ArrayList<Camping>();
-            //Perform the request and get the answer
+            ArrayList<Camping> campings = new ArrayList<>();
             String url = "https://dadesobertes.gva.es/api/3/action/datastore_search?id=2ddaf823-5da4-4459-aa57-5bfe9f9eb474";
-            Writer writer = new StringWriter();
-            char[] buffer = new char[1024];
-            try {
-                URL obj = new URL(url);
-                HttpURLConnection con = (HttpURLConnection) obj.openConnection();
-                con.setRequestMethod("GET");
-                //add request header
-                con.setRequestProperty("user-Agent", "Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/55.0.2883.87 Safari/537.36");
-                con.setRequestProperty("accept", "application/json;");
-                con.setRequestProperty("accept-language", "es");
-                con.connect();
-                int responseCode = con.getResponseCode();
-                if (responseCode != HttpURLConnection.HTTP_OK) {
-                    throw new IOException("HTTP error code: " + responseCode);
-                }
-                BufferedReader in = new BufferedReader(new InputStreamReader(con.getInputStream(), "UTF8"));
-                int n;
-                while ((n = in.read(buffer)) != -1) {
-                    writer.write(buffer, 0, n);
-                }
-                in.close();
-            } catch (UnsupportedEncodingException e) {
-                e.printStackTrace();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-            try {
-                //The String writer.toString() must be parsed in the campings ArrayList by using JSONArray and JSONObject
-                JSONObject object = new JSONObject(writer.toString());
-                JSONArray array = object.getJSONObject("result").getJSONArray("records");
-
-                int length = array.length();
-                for (int i = 0; i < length; i++) {
-                    JSONObject jsonCamping = array.getJSONObject(i);
-
-                    Camping camping = new Camping(i, jsonCamping.getString("Nombre"), jsonCamping.getString("Categoria"), jsonCamping.getString("Municipio"),
-                            jsonCamping.getString("Estado"), jsonCamping.getString("Provincia"), jsonCamping.getString("CP"), jsonCamping.getString("Direccion"),
-                            jsonCamping.getString("Email"), jsonCamping.getString("Web"), jsonCamping.getString("Núm. Parcelas"), jsonCamping.getString("Plazas Parcela"),
-                            jsonCamping.getString("Plazas Libre Acampada"), jsonCamping.getString("Días Periodo"));
-
-
-                    //String name = jsonCamping.getString("nombre");
-                    campings.add(camping);
-                    originalCampings.add(camping);
-
-                    System.out.println(jsonCamping.getString("Nombre"));
-                }
-            }catch (JSONException e){
-                e.printStackTrace();
-            }
-
+            campings = getCampingsFromUrl(url);
+            originalCampings.addAll(campings);
             return campings;
         }
+
         @Override
         protected void onPostExecute(ArrayList campings) {
-            // Create the RecyclerView
             setupData(campings);
             Collections.sort(campings, comparator);
         }
     }
-
 
     @Override
     public void onItemClick(int position) {
@@ -322,7 +317,4 @@ public class MainActivity extends AppCompatActivity implements CampingsViewInter
 
         startActivity(intent);
     }
-
-
-
 }
